@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>Grundguide — Projekt X</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',sans-serif; background:#f8f9fb; color:#1a1a2e; font-size:13px; line-height:1.6; }
+  .page { max-width:900px; margin:0 auto; padding:40px 36px; background:white; }
+
+  .cover { background:linear-gradient(135deg,#6366f1,#8b5cf6); border-radius:14px; padding:44px; color:white; margin-bottom:36px; }
+  .cover .tag { display:inline-block; background:rgba(255,255,255,.2); border-radius:999px; padding:3px 12px; font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; margin-bottom:16px; }
+  .cover h1 { font-size:32px; font-weight:800; line-height:1.15; margin-bottom:10px; }
+  .cover p { font-size:14px; opacity:.85; max-width:480px; }
+  .cover .meta { margin-top:22px; display:flex; gap:24px; font-size:12px; opacity:.7; }
+  .cover .meta span { font-weight:600; opacity:1; }
+
+  .section { margin-bottom:34px; }
+  .section-header { display:flex; align-items:center; gap:10px; margin-bottom:14px; padding-bottom:10px; border-bottom:2px solid #f0f0f7; }
+  .step-num { background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; width:28px; height:28px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0; }
+  .section-header h2 { font-size:17px; font-weight:700; }
+
+  .file-block { margin:10px 0 16px; }
+  .file-label { background:#ededf9; border-radius:7px 7px 0 0; padding:6px 14px; font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:#6366f1; border:1.5px solid #ddddf0; border-bottom:none; display:inline-block; }
+
+  pre { background:#1e1e2e; color:#cdd6f4; border-radius:0 8px 8px 8px; padding:16px 18px; font-family:'JetBrains Mono',monospace; font-size:11.5px; line-height:1.75; margin:0; overflow-x:auto; border:1.5px solid #2a2a3e; white-space:pre-wrap; word-break:break-word; }
+
+  .sub { font-size:13px; color:#555; margin:0 0 12px; }
+  .callout { border-left:3px solid #6366f1; background:#f5f5ff; border-radius:0 7px 7px 0; padding:10px 14px; margin:12px 0; font-size:12.5px; color:#555; }
+  .callout strong { color:#6366f1; }
+  .callout.warn { border-color:#f59e0b; background:#fffbeb; }
+  .callout.warn strong { color:#d97706; }
+
+  hr { border:none; border-top:2px solid #f0f0f7; margin:28px 0; }
+
+  @media print {
+    body { background:white; }
+    .page { padding:28px; }
+    * {
+      page-break-before:avoid !important;
+      page-break-after:avoid !important;
+      page-break-inside:avoid !important;
+      break-before:avoid !important;
+      break-after:avoid !important;
+      break-inside:avoid !important;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="cover">
+  <div class="tag">Grundkod</div>
+  <h1>Projekt X — Grunden</h1>
+  <p>Exakt kod för alla konfigurationsfiler och grundstrukturen. Funktionaliteten (sidor, routes) byggs på denna grund.</p>
+  <div class="meta">
+    <div>Backend <span>Express · Prisma · PostgreSQL</span></div>
+    <div>Frontend <span>React · Vite · Tailwind</span></div>
+    <div>Drift <span>Docker Compose</span></div>
+  </div>
+</div>
+
+<!-- ===== 1. DOCKER ===== -->
+<div class="section">
+  <div class="section-header"><div class="step-num">1</div><h2>Docker &amp; miljövariabler</h2></div>
+  <p class="sub">Dessa tre filer i projektets rot startar hela systemet med ett kommando: <code>docker compose up --build</code></p>
+
+  <div class="file-block">
+    <div class="file-label">docker-compose.yml</div>
+    <pre>version: '3.9'
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      JWT_SECRET: ${JWT_SECRET}
+      PORT: 4000
+    ports:
+      - "4000:4000"
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  pgdata:</pre>
+  </div>
+
+  <div class="file-block">
+    <div class="file-label">.env.example &nbsp;(kopiera till .env)</div>
+    <pre>POSTGRES_USER=projektx
+POSTGRES_PASSWORD=projektx_secret
+POSTGRES_DB=projektx_db
+JWT_SECRET=change_this_to_a_random_secret_string</pre>
+  </div>
+
+  <div class="file-block">
+    <div class="file-label">.gitignore</div>
+    <pre>node_modules/
+dist/
+.env
+*.log</pre>
+  </div>
+
+  <div class="callout warn"><strong>Viktigt:</strong> .env pushas aldrig till GitHub — den innehåller lösenord. Varje person i gruppen skapar sin egen .env från .env.example.</div>
+</div>
+
+<hr>
+
+<!-- ===== 2. BACKEND KONFIG ===== -->
+<div class="section">
+  <div class="section-header"><div class="step-num">2</div><h2>Backend — konfigfiler</h2></div>
+
+  <div class="file-block">
+    <div class="file-label">backend/Dockerfile</div>
+    <pre>FROM node:20-alpine
+
+RUN apk add --no-cache openssl
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY prisma ./prisma
+RUN npx prisma generate
+
+COPY . .
+RUN npm run build
+
+EXPOSE 4000
+
+CMD sh -c "npx prisma db push --accept-data-loss &amp;&amp; node dist/index.js"</pre>
+  </div>
+  <div class="callout"><strong>OBS:</strong> <code>apk add openssl</code> måste finnas — Prisma kraschar annars på Alpine Linux.</div>
+
+  <div class="file-block">
+    <div class="file-label">backend/package.json</div>
+    <pre>{
+  "name": "projektx-backend",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "ts-node-dev --respawn src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "seed": "ts-node prisma/seed.ts",
+    "generate": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.13.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "ical-generator": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^10.0.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.12.12",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.6",
+    "@types/uuid": "^9.0.8",
+    "prisma": "^5.13.0",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.5"
+  }
+}</pre>
+  </div>
+
+  <div class="file-block">
+    <div class="file-label">backend/tsconfig.json</div>
+    <pre>{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}</pre>
+  </div>
+</div>
+
+<hr>
+
+<!-- ===== 3. PRISMA SCHEMA ===== -->
+<div class="section">
+  <div class="section-header"><div class="step-num">3</div><h2>Databas — Prisma schema</h2></div>
+  <p class="sub">Alla tabeller definieras här. Kör <code>npx prisma db push</code> för att skapa dem i databasen.</p>
+
+  <div class="file-block">
+    <div class="file-label">backend/prisma/schema.prisma</div>
+    <pre>generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String?
+  status      String     @default("GREEN")   // GREEN, YELLOW, RED
+  phase       String?
+  budget      Float?
+  summary     String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  activities  Activity[]
+  risks       Risk[]
+  issues      Issue[]
+  decisions   Decision[]
+  shareTokens ShareToken[]
+}
+
+model Activity {
+  id          Int      @id @default(autoincrement())
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   Int
+  name        String
+  startDate   DateTime
+  endDate     DateTime
+  progress    Int      @default(0)            // 0–100
+  status      String   @default("NOT_STARTED") // NOT_STARTED, IN_PROGRESS, DONE, BLOCKED
+  isMilestone Boolean  @default(false)
+  budget      Float?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  resources  ActivityResource[]
+  dependsOn  Dependency[]  @relation("DependencyTo")
+  blockedBy  Dependency[]  @relation("DependencyFrom")
+}
+
+model Dependency {
+  id             Int      @id @default(autoincrement())
+  fromActivity   Activity @relation("DependencyFrom", fields: [fromActivityId], references: [id], onDelete: Cascade)
+  fromActivityId Int
+  toActivity     Activity @relation("DependencyTo", fields: [toActivityId], references: [id], onDelete: Cascade)
+  toActivityId   Int
+}
+
+model Domain {
+  id     Int     @id @default(autoincrement())
+  name   String
+  tribes Tribe[]
+}
+
+model Tribe {
+  id       Int    @id @default(autoincrement())
+  name     String
+  domain   Domain @relation(fields: [domainId], references: [id])
+  domainId Int
+  teams    Team[]
+}
+
+model Team {
+  id        Int        @id @default(autoincrement())
+  name      String
+  tribe     Tribe      @relation(fields: [tribeId], references: [id])
+  tribeId   Int
+  resources Resource[]
+}
+
+model Resource {
+  id         Int               @id @default(autoincrement())
+  name       String
+  role       String?
+  team       Team              @relation(fields: [teamId], references: [id])
+  teamId     Int
+  activities ActivityResource[]
+}
+
+model ActivityResource {
+  activity    Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  activityId  Int
+  resource    Resource @relation(fields: [resourceId], references: [id])
+  resourceId  Int
+  hoursNeeded Float?
+  @@id([activityId, resourceId])
+}
+
+model Risk {
+  id          Int      @id @default(autoincrement())
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   Int
+  description String
+  impact      String   @default("MEDIUM")  // LOW, MEDIUM, HIGH
+  probability String   @default("MEDIUM")
+  status      String   @default("OPEN")    // OPEN, MITIGATED, CLOSED
+  owner       String?
+  createdAt   DateTime @default(now())
+}
+
+model Issue {
+  id          Int      @id @default(autoincrement())
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   Int
+  description String
+  status      String   @default("OPEN")  // OPEN, IN_PROGRESS, RESOLVED
+  owner       String?
+  createdAt   DateTime @default(now())
+}
+
+model Decision {
+  id          Int      @id @default(autoincrement())
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   Int
+  description String
+  owner       String?
+  decidedAt   DateTime @default(now())
+}
+
+model ShareToken {
+  id        Int       @id @default(autoincrement())
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId Int
+  token     String    @unique
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+}</pre>
+  </div>
+</div>
+
+<hr>
+
+<!-- ===== 4. BACKEND APP ===== -->
+<div class="section">
+  <div class="section-header"><div class="step-num">4</div><h2>Backend — Express-app &amp; mönster</h2></div>
+
+  <div class="file-block">
+    <div class="file-label">backend/src/lib/prisma.ts</div>
+    <pre>import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
+export default prisma</pre>
+  </div>
+
+  <div class="file-block">
+    <div class="file-label">backend/src/index.ts</div>
+    <pre>import express from 'express'
+import cors from 'cors'
+import swaggerJsdoc from 'swagger-jsdoc'
+import swaggerUi from 'swagger-ui-express'
+
+import projectRoutes from './routes/projects'
+import activityRoutes from './routes/activities'
+import resourceRoutes from './routes/resources'
+import raidRoutes from './routes/raid'
+import shareRoutes from './routes/share'
+
+const app = express()
+const PORT = process.env.PORT || 4000
+
+app.use(cors())
+app.use(express.json())
+
+// Swagger — dokumentation genereras automatiskt från JSDoc-kommentarer i routes
+const swaggerOptions: swaggerJsdoc.Options = {
+  definition: {
+    openapi: '3.0.0',
+    info: { title: 'Projekt X API', version: '1.0.0' },
+    servers: [{ url: `http://localhost:${PORT}` }],
+  },
+  apis: ['./src/routes/*.ts'],
+}
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerJsdoc(swaggerOptions)))
+
+// Routes
+app.use('/api/projects',   projectRoutes)
+app.use('/api/activities', activityRoutes)
+app.use('/api/resources',  resourceRoutes)
+app.use('/api/raid',       raidRoutes)
+app.use('/api/share',      shareRoutes)
+
+app.get('/api/health', (_req, res) => res.json({ status: 'ok' }))
+
+app.listen(PORT, () => {
+  console.log(`Backend running on http://localhost:${PORT}`)
+  console.log(`Swagger docs: http://localhost:${PORT}/api/docs`)
+})</pre>
+  </div>
+
+  <div class="callout"><strong>Mönstret för en route-fil</strong> — alla routes följer samma struktur. Skapa en ny fil i <code>src/routes/</code> och registrera den i index.ts.</div>
+
+  <div class="file-block">
+    <div class="file-label">backend/src/routes/[namn].ts — mönster</div>
+    <pre>import { Router, Request, Response } from 'express'
+import prisma from '../lib/prisma'
+
+const router = Router()
+
+// GET — hämta alla
+router.get('/', async (req: Request, res: Response) => {
+  const items = await prisma.project.findMany()
+  res.json(items)
+})
+
+// GET — hämta en
+router.get('/:id', async (req: Request, res: Response) => {
+  const item = await prisma.project.findUnique({ where: { id: Number(req.params.id) } })
+  if (!item) return res.status(404).json({ error: 'Hittades inte' })
+  res.json(item)
+})
+
+// POST — skapa
+router.post('/', async (req: Request, res: Response) => {
+  const item = await prisma.project.create({ data: req.body })
+  res.status(201).json(item)
+})
+
+// PUT — uppdatera
+router.put('/:id', async (req: Request, res: Response) => {
+  const item = await prisma.project.update({ where: { id: Number(req.params.id) }, data: req.body })
+  res.json(item)
+})
+
+// DELETE — ta bort
+router.delete('/:id', async (req: Request, res: Response) => {
+  await prisma.project.delete({ where: { id: Number(req.params.id) } })
+  res.status(204).send()
+})
+
+export default router</pre>
+  </div>
+</div>
+
+<hr>
+
+<!-- ===== 5. FRONTEND KONFIG ===== -->
+<div class="section">
+  <div class="section-header"><div class="step-num">5</div><h2>Frontend — konfigfiler</h2></div>
+
+  <div class="file-block">
+    <div class="file-label">frontend/Dockerfile</div>
+    <pre>FROM node:20-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]</pre>
+  </div>
+
+  <div class="file-block">
+    <div class="file-label">frontend/nginx.conf</div>
+    <pre>server {
+  listen 80;
+  root /usr/share/nginx/html;
+  index index.html;
+
+  location / {
+    try_files $uri $uri/ /index.html;  # Krävs för React Router
+  }
+
+  location /api {
+    proxy_pass http://backend:4000;    # Vidarebefordrar API-anrop till backend
+  }
+}</pre>
+  </div>
+
+  <div class="file-block">
+    <div class="file-label">frontend/package.json</div>
+    <pre>{
+  "name": "projektx-frontend",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc &amp;&amp; vite build"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.40.0",
+    "axios": "^1.7.2",
+    "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
+    "jspdf": "^2.5.1",
+    "html2canvas": "^1.4.1",
+    "lucide-react": "^0.379.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.23.1",
+    "tailwind-merge": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.12"
+  }
+}</pre>
+  </div>
+
+  <div class="file-block">
+    <div class="file-label">frontend/vite.config.ts</div>
+    <pre>import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from 'path'
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: { '@': path.resolve(__dirname, './src') },
+  },
+  server: {
+    proxy: {
+      '/api': { target: 'http://localhost:4000', changeOrigin: true },
+    },
+  },
+})</pre>
+  </div>
+
+  <div class="file-block">
+    <div class="file-label">frontend/tailwind.config.js</div>
+    <pre>export default {
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        brand: { DEFAULT: '#6366f1', dark: '#4f46e5' },
+      },
+    },
+  },
+  plugins: [],
+}</pre>
+  </div>
+</div>
+
+<hr>
+
+<!-- ===== 6. FRONTEND APP ===== -->
+<div class="section">
+  <div class="section-header"><div class="step-num">6</div><h2>Frontend — React-grunden</h2></div>
+
+  <div class="file-block">
+    <div class="file-label">frontend/src/main.tsx</div>
+    <pre>import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import App from './App'
+import './index.css'
+
+const queryClient = new QueryClient()
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  &lt;React.StrictMode&gt;
+    &lt;QueryClientProvider client={queryClient}&gt;
+      &lt;App /&gt;
+    &lt;/QueryClientProvider&gt;
+  &lt;/React.StrictMode&gt;
+)</pre>
+  </div>
+
+  <div class="file-block">
+    <div class="file-label">frontend/src/index.css</div>
+    <pre>@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body { @apply bg-gray-50 text-gray-900 antialiased; }
+}</pre>
+  </div>
+
+  <div class="file-block">
+    <div class="file-label">frontend/src/App.tsx — routing</div>
+    <pre>import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Layout from './components/Layout'
+import Portfolio from './pages/Portfolio'
+import ProjectOverview from './pages/ProjectOverview'
+import Plan from './pages/Plan'
+import Resources from './pages/Resources'
+import Management from './pages/Management'
+import ShareView from './pages/ShareView'
+
+export default function App() {
+  return (
+    &lt;BrowserRouter&gt;
+      &lt;Routes&gt;
+        &lt;Route path="/share/:token" element={&lt;ShareView /&gt;} /&gt;
+        &lt;Route element={&lt;Layout /&gt;}&gt;
+          &lt;Route path="/" element={&lt;Portfolio /&gt;} /&gt;
+          &lt;Route path="/projects/:id" element={&lt;ProjectOverview /&gt;} /&gt;
+          &lt;Route path="/projects/:id/plan" element={&lt;Plan /&gt;} /&gt;
+          &lt;Route path="/projects/:id/resources" element={&lt;Resources /&gt;} /&gt;
+          &lt;Route path="/projects/:id/management" element={&lt;Management /&gt;} /&gt;
+        &lt;/Route&gt;
+      &lt;/Routes&gt;
+    &lt;/BrowserRouter&gt;
+  )
+}</pre>
+  </div>
+
+  <div class="file-block">
+    <div class="file-label">frontend/src/lib/api.ts — alla API-anrop</div>
+    <pre>import axios from 'axios'
+
+const api = axios.create({ baseURL: '/api' })
+
+// Projekt
+export const getProjects = (search?: string, status?: string) =>
+  api.get('/projects', { params: { search, status } }).then(r => r.data)
+export const getProject   = (id: number) => api.get(`/projects/${id}`).then(r => r.data)
+export const createProject = (data: object) => api.post('/projects', data).then(r => r.data)
+export const updateProject = (id: number, data: object) => api.put(`/projects/${id}`, data).then(r => r.data)
+export const deleteProject = (id: number) => api.delete(`/projects/${id}`)
+
+// Aktiviteter
+export const getActivities  = (projectId: number) => api.get(`/activities/${projectId}`).then(r => r.data)
+export const createActivity = (data: object) => api.post('/activities', data).then(r => r.data)
+export const updateActivity = (id: number, data: object) => api.put(`/activities/${id}`, data).then(r => r.data)
+export const deleteActivity = (id: number) => api.delete(`/activities/${id}`)
+export const addDependency  = (activityId: number, blockedByActivityId: number) =>
+  api.post(`/activities/${activityId}/dependencies`, { blockedByActivityId }).then(r => r.data)
+
+// Resurser
+export const getResourceHierarchy = () => api.get('/resources/hierarchy').then(r => r.data)
+export const getAllResources       = () => api.get('/resources').then(r => r.data)
+
+// RAID
+export const getRisks      = (projectId: number) => api.get(`/raid/${projectId}/risks`).then(r => r.data)
+export const createRisk    = (projectId: number, data: object) => api.post(`/raid/${projectId}/risks`, data).then(r => r.data)
+export const getIssues     = (projectId: number) => api.get(`/raid/${projectId}/issues`).then(r => r.data)
+export const createIssue   = (projectId: number, data: object) => api.post(`/raid/${projectId}/issues`, data).then(r => r.data)
+export const getDecisions  = (projectId: number) => api.get(`/raid/${projectId}/decisions`).then(r => r.data)
+export const createDecision = (projectId: number, data: object) => api.post(`/raid/${projectId}/decisions`, data).then(r => r.data)
+
+// Delning &amp; export
+export const createShareToken  = (projectId: number) => api.post(`/projects/${projectId}/share`).then(r => r.data)
+export const getSharedProject  = (token: string) => api.get(`/share/${token}`).then(r => r.data)
+export const exportIcs         = (projectId: number) => window.open(`/api/projects/${projectId}/export/ics`, '_blank')
+
+export default api</pre>
+  </div>
+
+  <div class="file-block">
+    <div class="file-label">frontend/src/lib/utils.ts — hjälpfunktioner</div>
+    <pre>import { type ClassValue, clsx } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+
+// Kombinerar Tailwind-klasser säkert
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
+// Tailwind-klasser per status
+export const statusColors: Record&lt;string, string&gt; = {
+  GREEN: 'bg-green-100 text-green-800',   YELLOW: 'bg-yellow-100 text-yellow-800',
+  RED: 'bg-red-100 text-red-800',         DONE: 'bg-green-100 text-green-800',
+  IN_PROGRESS: 'bg-blue-100 text-blue-800', NOT_STARTED: 'bg-gray-100 text-gray-600',
+  BLOCKED: 'bg-red-100 text-red-800',     OPEN: 'bg-orange-100 text-orange-800',
+  RESOLVED: 'bg-green-100 text-green-800',
+}
+
+export const statusLabels: Record&lt;string, string&gt; = {
+  GREEN: 'Grön', YELLOW: 'Gul', RED: 'Röd',
+  DONE: 'Klar', IN_PROGRESS: 'Pågående', NOT_STARTED: 'Ej startad',
+  BLOCKED: 'Blockerad', OPEN: 'Öppen', RESOLVED: 'Löst',
+}
+
+export const impactColors: Record&lt;string, string&gt; = {
+  HIGH: 'text-red-600 font-semibold', MEDIUM: 'text-yellow-600 font-semibold', LOW: 'text-green-600',
+}</pre>
+  </div>
+
+  <div class="callout"><strong>Mönstret för en sida</strong> — alla sidor följer samma struktur med useQuery + useMutation.</div>
+
+  <div class="file-block">
+    <div class="file-label">frontend/src/pages/[Sida].tsx — mönster</div>
+    <pre>import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { getProjects, createProject } from '../lib/api'
+
+export default function MinSida() {
+  const qc = useQueryClient()
+
+  // Hämta data
+  const { data: projects = [] } = useQuery({
+    queryKey: ['projects'],
+    queryFn: () => getProjects(),
+  })
+
+  // Skapa/uppdatera data
+  const mutation = useMutation({
+    mutationFn: (data: object) => createProject(data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['projects'] }),
+  })
+
+  return (
+    &lt;div className="p-6"&gt;
+      &lt;h1 className="text-xl font-bold mb-4"&gt;Min sida&lt;/h1&gt;
+      {projects.map((p: any) =&gt; (
+        &lt;div key={p.id}&gt;{p.name}&lt;/div&gt;
+      ))}
+    &lt;/div&gt;
+  )
+}</pre>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

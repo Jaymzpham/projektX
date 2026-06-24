@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Byggguide — Projekt X</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f8f9fb;
+    color: #1a1a2e;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 40px;
+    background: white;
+  }
+
+  /* HEADER */
+  .cover {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border-radius: 16px;
+    padding: 52px 48px;
+    color: white;
+    margin-bottom: 48px;
+  }
+  .cover .tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .cover h1 {
+    font-size: 38px;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 14px;
+  }
+  .cover p {
+    font-size: 16px;
+    color: #ffffff;
+    max-width: 520px;
+    line-height: 1.6;
+  }
+  .cover .meta {
+    margin-top: 32px;
+    display: flex;
+    gap: 32px;
+    font-size: 13px;
+    opacity: 0.75;
+  }
+  .cover .meta span { font-weight: 600; opacity: 1; }
+
+  /* SECTION */
+  .section {
+    margin-bottom: 44px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f0f0f7;
+  }
+  .step-num {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+
+  /* TEXT */
+  p { margin-bottom: 12px; color: #444; }
+  .lead { font-size: 15px; color: #555; margin-bottom: 20px; }
+
+  /* CODE */
+  pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    border-radius: 10px;
+    padding: 20px 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    margin: 14px 0;
+    overflow-x: auto;
+  }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    background: #f0f0f7;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #6366f1;
+  }
+  .comment { color: #6c7086; }
+  .keyword { color: #cba6f7; }
+  .string { color: #a6e3a1; }
+  .fn { color: #89b4fa; }
+  .prop { color: #fab387; }
+
+  /* STACK TABLE */
+  .stack-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .stack-card {
+    border: 1.5px solid #e8e8f0;
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .stack-card .tech {
+    font-weight: 700;
+    color: #6366f1;
+    font-size: 14px;
+    margin-bottom: 3px;
+  }
+  .stack-card .role {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #aaa;
+    margin-bottom: 6px;
+  }
+  .stack-card p { font-size: 13px; color: #666; margin: 0; }
+
+  /* FILE TREE */
+  .tree {
+    background: #fafafa;
+    border: 1.5px solid #e8e8f0;
+    border-radius: 10px;
+    padding: 18px 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.9;
+    margin: 14px 0;
+  }
+  .tree .dir { color: #6366f1; font-weight: 600; }
+  .tree .file { color: #444; }
+  .tree .note { color: #999; font-style: italic; }
+
+  /* STEPS LIST */
+  .steps {
+    counter-reset: step;
+    list-style: none;
+    margin: 14px 0;
+  }
+  .steps li {
+    counter-increment: step;
+    display: flex;
+    gap: 14px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+  }
+  .steps li::before {
+    content: counter(step);
+    background: #f0f0f7;
+    color: #6366f1;
+    font-weight: 700;
+    font-size: 12px;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .steps li p { margin: 0; color: #444; }
+
+  /* CALLOUT */
+  .callout {
+    border-left: 4px solid #6366f1;
+    background: #f5f5ff;
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 13px;
+    color: #555;
+  }
+  .callout strong { color: #6366f1; }
+
+  .callout.warning {
+    border-color: #f59e0b;
+    background: #fffbeb;
+  }
+  .callout.warning strong { color: #d97706; }
+
+  /* ARCH DIAGRAM */
+  .arch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin: 20px 0;
+    flex-wrap: wrap;
+  }
+  .arch-box {
+    background: white;
+    border: 2px solid #e8e8f0;
+    border-radius: 10px;
+    padding: 14px 20px;
+    text-align: center;
+    min-width: 140px;
+  }
+  .arch-box .label {
+    font-weight: 700;
+    font-size: 13px;
+    color: #1a1a2e;
+  }
+  .arch-box .sub {
+    font-size: 11px;
+    color: #999;
+    margin-top: 3px;
+  }
+  .arch-box.highlight {
+    border-color: #6366f1;
+    background: linear-gradient(135deg, #f5f5ff, #fafaff);
+  }
+  .arch-arrow {
+    font-size: 20px;
+    color: #bbb;
+    padding: 0 8px;
+  }
+
+  /* DIVIDER */
+  .divider {
+    border: none;
+    border-top: 2px solid #f0f0f7;
+    margin: 40px 0;
+  }
+
+  /* PRINT */
+  @media print {
+    body { background: white; }
+    .page { padding: 32px; }
+    * {
+      page-break-before: avoid !important;
+      page-break-after: avoid !important;
+      page-break-inside: avoid !important;
+      break-before: avoid !important;
+      break-after: avoid !important;
+      break-inside: avoid !important;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- COVER -->
+  <div class="cover">
+    <div class="tag">Byggguide</div>
+    <h1>Hur vi byggde<br>Projekt X</h1>
+    <p>En steg-för-steg-guide över hur vi satte upp ett modernt projekthanteringsverktyg med React, Express, PostgreSQL och Docker.</p>
+    <div class="meta">
+      <div>Stack <span>React · Express · PostgreSQL</span></div>
+      <div>Deployment <span>Docker Compose</span></div>
+      <div>Språk <span>TypeScript</span></div>
+    </div>
+  </div>
+
+  <!-- INSTALLATION -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">0</div>
+      <h2>Innan du börjar — installera dessa program</h2>
+    </div>
+    <p class="lead">Du behöver tre program installerade på datorn. Allt annat (Node.js-paket, databas, webbserver) sköts automatiskt av Docker.</p>
+
+    <div class="stack-grid">
+      <div class="stack-card">
+        <div class="role">Krävs</div>
+        <div class="tech">Docker Desktop</div>
+        <p>Kör hela applikationen (frontend, backend, databas) i isolerade containers. Det enda du verkligen måste ha.</p>
+        <p style="margin-top:8px;font-size:12px;color:#6366f1;font-weight:600;">→ docker.com/products/docker-desktop</p>
+      </div>
+      <div class="stack-card">
+        <div class="role">Krävs för kodning</div>
+        <div class="tech">Git</div>
+        <p>Versionshantering och samarbete via GitHub. Används för att dela koden i gruppen.</p>
+        <p style="margin-top:8px;font-size:12px;color:#6366f1;font-weight:600;">→ git-scm.com/downloads</p>
+      </div>
+      <div class="stack-card">
+        <div class="role">Rekommenderas</div>
+        <div class="tech">VS Code</div>
+        <p>Kodredigerare med utmärkt stöd för TypeScript, React och Docker. Gratis från Microsoft.</p>
+        <p style="margin-top:8px;font-size:12px;color:#6366f1;font-weight:600;">→ code.visualstudio.com</p>
+      </div>
+      <div class="stack-card">
+        <div class="role">Valfritt (lokal dev)</div>
+        <div class="tech">Node.js 20+</div>
+        <p>Behövs bara om du vill köra frontend/backend direkt på datorn utan Docker. Annars sköter Docker det.</p>
+        <p style="margin-top:8px;font-size:12px;color:#6366f1;font-weight:600;">→ nodejs.org</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Installationsordning:</strong> Installera Docker Desktop först → starta det → verifiera att det fungerar. Git och VS Code kan installeras i valfri ordning.
+    </div>
+
+    <p style="font-weight:700;margin:20px 0 10px;color:#1a1a2e;font-size:15px;">Allt annat installeras automatiskt</p>
+    <p style="color:#555;margin-bottom:14px;">Prisma, Express, React, Tailwind och alla andra paket behöver du <strong>inte</strong> installera manuellt. När du kör <code>docker compose up --build</code> körs <code>npm install</code> automatiskt inuti Docker och hämtar allt från package.json.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0;">
+      <div style="background:#fafafa;border:1.5px solid #e8e8f0;border-radius:10px;padding:14px 16px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#aaa;margin-bottom:8px;">Backend — installeras automatiskt</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:2;color:#444;">
+          <span style="color:#6366f1;font-weight:600;">prisma</span> + <span style="color:#6366f1;font-weight:600;">@prisma/client</span><br>
+          <span style="color:#6366f1;font-weight:600;">express</span> — webbserver<br>
+          <span style="color:#6366f1;font-weight:600;">cors</span> — tillåter anrop från frontend<br>
+          <span style="color:#6366f1;font-weight:600;">swagger-jsdoc</span> + <span style="color:#6366f1;font-weight:600;">swagger-ui-express</span><br>
+          <span style="color:#6366f1;font-weight:600;">ical-generator</span> — .ics-export<br>
+          <span style="color:#6366f1;font-weight:600;">uuid</span> — share-tokens<br>
+          <span style="color:#6366f1;font-weight:600;">jsonwebtoken</span> — JWT<br>
+          <span style="color:#6366f1;font-weight:600;">zod</span> — validering<br>
+          <span style="color:#6366f1;font-weight:600;">typescript</span> + <span style="color:#6366f1;font-weight:600;">ts-node</span>
+        </div>
+      </div>
+      <div style="background:#fafafa;border:1.5px solid #e8e8f0;border-radius:10px;padding:14px 16px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#aaa;margin-bottom:8px;">Frontend — installeras automatiskt</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:2;color:#444;">
+          <span style="color:#6366f1;font-weight:600;">react</span> + <span style="color:#6366f1;font-weight:600;">react-dom</span><br>
+          <span style="color:#6366f1;font-weight:600;">react-router-dom</span> — navigering<br>
+          <span style="color:#6366f1;font-weight:600;">@tanstack/react-query</span> — API-anrop<br>
+          <span style="color:#6366f1;font-weight:600;">axios</span> — HTTP-klient<br>
+          <span style="color:#6366f1;font-weight:600;">tailwindcss</span> — styling<br>
+          <span style="color:#6366f1;font-weight:600;">lucide-react</span> — ikoner<br>
+          <span style="color:#6366f1;font-weight:600;">date-fns</span> — datumhantering<br>
+          <span style="color:#6366f1;font-weight:600;">jspdf</span> + <span style="color:#6366f1;font-weight:600;">html2canvas</span> — PDF-export<br>
+          <span style="color:#6366f1;font-weight:600;">vite</span> + <span style="color:#6366f1;font-weight:600;">typescript</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Hur det fungerar:</strong> Docker läser <code>package.json</code> och kör <code>npm install</code> vid bygget. Du behöver aldrig manuellt installera Prisma, React eller något annat paket — det sker automatiskt varje gång du kör <code>docker compose up --build</code>.
+    </div>
+
+    <p style="font-weight:600;margin:16px 0 8px;color:#1a1a2e;">Verifiera att allt fungerar (kör i terminalen):</p>
+    <pre>docker --version        # ska visa: Docker version 24.x eller högre
+docker compose version  # ska visa: Docker Compose version 2.x
+git --version           # ska visa: git version 2.x</pre>
+
+    <p style="font-weight:600;margin:16px 0 8px;color:#1a1a2e;">Starta projektet (efter att allt är installerat):</p>
+    <pre># 1. Hämta koden (första gången)
+git clone https://github.com/GRUPPENS-REPO.git
+cd "Projekt X"
+
+# 2. Skapa miljöfil
+copy .env.example .env       # Windows
+# cp .env.example .env       # Mac/Linux
+
+# 3. Bygg och starta (tar ~3–5 min första gången)
+docker compose up --build
+
+# 4. Ladda in exempeldata (kör bara en gång)
+docker compose exec backend npm run seed
+
+# 5. Öppna i webbläsaren
+# http://localhost:3000</pre>
+
+    <div class="callout warning">
+      <strong>Vanligt fel:</strong> Om Docker Desktop inte är igång när du kör <code>docker compose up</code> får du ett felmeddelande. Starta alltid Docker Desktop först och vänta tills ikonen i aktivitetsfältet slutar snurra.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- STEG 1: VARFÖR DENNA STACK -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">1</div>
+      <h2>Val av teknikstack</h2>
+    </div>
+    <p class="lead">Vi valde en modern full-stack JavaScript/TypeScript-lösning. Det betyder samma språk i frontend och backend — enklare att byta mellan dem och dela kunskap i gruppen.</p>
+
+    <div class="stack-grid">
+      <div class="stack-card">
+        <div class="role">Frontend</div>
+        <div class="tech">React + TypeScript</div>
+        <p>Komponentbaserat UI. TypeScript ger typsäkerhet och autocompletion vilket minskar buggar i ett stort projekt.</p>
+      </div>
+      <div class="stack-card">
+        <div class="role">Build-verktyg</div>
+        <div class="tech">Vite</div>
+        <p>Snabbare än Create React App. Startar på sekunder och har inbyggd proxy mot backend under utveckling.</p>
+      </div>
+      <div class="stack-card">
+        <div class="role">Styling</div>
+        <div class="tech">Tailwind CSS</div>
+        <p>Utility-first CSS. Bygger UI direkt i JSX utan att skriva separata CSS-filer. Snabbt och konsekvent.</p>
+      </div>
+      <div class="stack-card">
+        <div class="role">Backend</div>
+        <div class="tech">Node.js + Express</div>
+        <p>Samma språk som frontend. Express är minimalt och flexibelt — enkelt att förstå och utöka.</p>
+      </div>
+      <div class="stack-card">
+        <div class="role">Databas</div>
+        <div class="tech">PostgreSQL</div>
+        <p>Robust relationsdatabas. Branschstandard för komplexa datamodeller med relationer och beroenden.</p>
+      </div>
+      <div class="stack-card">
+        <div class="role">ORM</div>
+        <div class="tech">Prisma</div>
+        <p>Skriver JavaScript istället för SQL. Definiera tabeller som kod, TypeScript-typer genereras automatiskt.</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- STEG 2: ARKITEKTUR -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">2</div>
+      <h2>Systemarkitektur</h2>
+    </div>
+    <p class="lead">Tre separata tjänster kommunicerar med varandra. Varje tjänst körs i sin egen Docker-container.</p>
+
+    <div class="arch">
+      <div class="arch-box highlight">
+        <div class="label">Frontend</div>
+        <div class="sub">React · Nginx · :3000</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box highlight">
+        <div class="label">Backend</div>
+        <div class="sub">Express · Node.js · :4000</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box highlight">
+        <div class="label">Databas</div>
+        <div class="sub">PostgreSQL · :5432</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Hur det hänger ihop:</strong> Användaren öppnar webbläsaren på port 3000. React-appen skickar API-anrop till Express på port 4000. Express pratar med PostgreSQL via Prisma. Allt körs lokalt i Docker.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- STEG 3: DOCKER -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">3</div>
+      <h2>Sätta upp Docker Compose</h2>
+    </div>
+    <p class="lead"><code>docker-compose.yml</code> i projektets rot definierar alla tre tjänster. Med ett kommando startar allt.</p>
+
+    <pre><span class="comment"># docker-compose.yml</span>
+services:
+  <span class="prop">db</span>:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: <span class="string">${POSTGRES_USER}</span>
+      POSTGRES_PASSWORD: <span class="string">${POSTGRES_PASSWORD}</span>
+      POSTGRES_DB: <span class="string">${POSTGRES_DB}</span>
+    healthcheck:
+      test: [<span class="string">"CMD-SHELL"</span>, <span class="string">"pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"</span>]
+
+  <span class="prop">backend</span>:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy   <span class="comment"># väntar på att databasen är redo</span>
+    environment:
+      DATABASE_URL: <span class="string">postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}</span>
+
+  <span class="prop">frontend</span>:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - <span class="string">"3000:80"</span></pre>
+
+    <div class="callout warning">
+      <strong>Viktigt:</strong> Skapa alltid en <code>.env</code>-fil från <code>.env.example</code> innan du startar. Filen ska aldrig pushas till GitHub — den innehåller lösenord.
+    </div>
+
+    <pre><span class="comment"># .env.example — mall som delas på GitHub</span>
+POSTGRES_USER=projektx
+POSTGRES_PASSWORD=projektx_secret
+POSTGRES_DB=projektx_db
+JWT_SECRET=byt_ut_detta_till_nagot_hemligt</pre>
+  </div>
+
+  <hr class="divider">
+
+  <!-- STEG 4: BACKEND -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">4</div>
+      <h2>Sätta upp backend (Express + Prisma)</h2>
+    </div>
+
+    <p class="lead">Backend är en Express-app i TypeScript. Prisma hanterar databasen och swagger-ui-express genererar API-dokumentation automatiskt.</p>
+
+    <p><strong>Mappstruktur backend:</strong></p>
+    <div class="tree">
+      <span class="dir">backend/</span><br>
+      &nbsp;&nbsp;<span class="dir">src/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">index.ts</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="note">← Express startar här, Swagger konfigureras</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">lib/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">prisma.ts</span> &nbsp;&nbsp;&nbsp;&nbsp;<span class="note">← Databaskoppling (singleton)</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">routes/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">projects.ts</span> &nbsp;&nbsp;<span class="note">← GET/POST/PUT/DELETE /api/projects</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">activities.ts</span> &nbsp;<span class="note">← Aktiviteter + beroenden</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">resources.ts</span> &nbsp;&nbsp;<span class="note">← Resurshierarki</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">raid.ts</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="note">← Risker, issues, beslut</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">share.ts</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="note">← Read-only delning via token</span><br>
+      &nbsp;&nbsp;<span class="dir">prisma/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">schema.prisma</span> &nbsp;<span class="note">← Databasmodeller definieras här</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">seed.ts</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="note">← Exempeldata</span>
+    </div>
+
+    <p><strong>Databaskoppling (Prisma singleton):</strong></p>
+    <pre><span class="comment">// src/lib/prisma.ts</span>
+<span class="keyword">import</span> { PrismaClient } <span class="keyword">from</span> <span class="string">'@prisma/client'</span>
+
+<span class="keyword">const</span> prisma = <span class="keyword">new</span> <span class="fn">PrismaClient</span>()
+<span class="keyword">export default</span> prisma</pre>
+
+    <p><strong>En typisk route (hämta alla projekt):</strong></p>
+    <pre><span class="comment">// src/routes/projects.ts</span>
+<span class="keyword">import</span> { Router } <span class="keyword">from</span> <span class="string">'express'</span>
+<span class="keyword">import</span> prisma <span class="keyword">from</span> <span class="string">'../lib/prisma'</span>
+
+<span class="keyword">const</span> router = <span class="fn">Router</span>()
+
+<span class="comment">/**
+ * @swagger
+ * /api/projects:
+ *   get:
+ *     summary: Lista alla projekt
+ */</span>
+router.<span class="fn">get</span>(<span class="string">'/'</span>, <span class="keyword">async</span> (req, res) => {
+  <span class="keyword">const</span> projects = <span class="keyword">await</span> prisma.project.<span class="fn">findMany</span>()
+  res.<span class="fn">json</span>(projects)
+})
+
+<span class="keyword">export default</span> router</pre>
+
+    <p><strong>Prisma-schema (exempel på modeller):</strong></p>
+    <pre><span class="comment">// prisma/schema.prisma</span>
+model Project {
+  id          Int        @id @default(autoincrement())
+  name        String
+  status      String     @default(<span class="string">"GREEN"</span>)  <span class="comment">// GREEN, YELLOW, RED</span>
+  budget      Float?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  activities  Activity[]
+  risks       Risk[]
+}
+
+model Activity {
+  id          Int      @id @default(autoincrement())
+  project     Project  @relation(fields: [projectId], references: [id])
+  projectId   Int
+  name        String
+  startDate   DateTime
+  endDate     DateTime
+  isMilestone Boolean  @default(false)
+}</pre>
+
+    <p><strong>Backend Dockerfile:</strong></p>
+    <pre><span class="keyword">FROM</span> node:20-alpine
+<span class="keyword">RUN</span> apk add --no-cache openssl   <span class="comment"># Prisma kräver OpenSSL på Alpine</span>
+<span class="keyword">WORKDIR</span> /app
+<span class="keyword">COPY</span> package*.json ./
+<span class="keyword">RUN</span> npm install
+<span class="keyword">COPY</span> prisma ./prisma
+<span class="keyword">RUN</span> npx prisma generate
+<span class="keyword">COPY</span> . .
+<span class="keyword">RUN</span> npm run build
+<span class="keyword">CMD</span> sh -c <span class="string">"npx prisma db push && node dist/index.js"</span></pre>
+  </div>
+
+  <hr class="divider">
+
+  <!-- STEG 5: FRONTEND -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">5</div>
+      <h2>Sätta upp frontend (React + Vite + Tailwind)</h2>
+    </div>
+
+    <p class="lead">Frontend är en React SPA (Single Page Application). React Router hanterar navigering mellan sidor. React Query hanterar API-anrop och caching.</p>
+
+    <p><strong>Mappstruktur frontend:</strong></p>
+    <div class="tree">
+      <span class="dir">frontend/src/</span><br>
+      &nbsp;&nbsp;<span class="file">main.tsx</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="note">← React monteras på #root</span><br>
+      &nbsp;&nbsp;<span class="file">App.tsx</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="note">← Routing (URL → sida)</span><br>
+      &nbsp;&nbsp;<span class="file">index.css</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="note">← Tailwind importeras</span><br>
+      &nbsp;&nbsp;<span class="dir">lib/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">api.ts</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="note">← Alla API-anrop samlade</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">utils.ts</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="note">← Färger och labels för status</span><br>
+      &nbsp;&nbsp;<span class="dir">components/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">Layout.tsx</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="note">← Sidolayout med navigation</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">StatusBadge.tsx</span> &nbsp;<span class="note">← Återanvändbar statustagg</span><br>
+      &nbsp;&nbsp;<span class="dir">pages/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">Portfolio.tsx</span> &nbsp;&nbsp;&nbsp;<span class="note">← Projektlista</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">Plan.tsx</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="note">← Gantt-vy</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">Resources.tsx</span> &nbsp;&nbsp;<span class="note">← Resurshierarki</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">Management.tsx</span> &nbsp;<span class="note">← Dashboard + PDF-export</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">ShareView.tsx</span> &nbsp;&nbsp;<span class="note">← Read-only extern vy</span>
+    </div>
+
+    <p><strong>Routing i App.tsx:</strong></p>
+    <pre><span class="comment">// src/App.tsx</span>
+<span class="keyword">export default function</span> <span class="fn">App</span>() {
+  <span class="keyword">return</span> (
+    &lt;<span class="fn">BrowserRouter</span>&gt;
+      &lt;<span class="fn">Routes</span>&gt;
+        &lt;<span class="fn">Route</span> path=<span class="string">"/"</span> element={&lt;<span class="fn">Layout</span> /&gt;}&gt;
+          &lt;<span class="fn">Route</span> index element={&lt;<span class="fn">Portfolio</span> /&gt;} /&gt;
+          &lt;<span class="fn">Route</span> path=<span class="string">"projects/:id"</span> element={&lt;<span class="fn">ProjectOverview</span> /&gt;} /&gt;
+          &lt;<span class="fn">Route</span> path=<span class="string">"projects/:id/plan"</span> element={&lt;<span class="fn">Plan</span> /&gt;} /&gt;
+        &lt;/<span class="fn">Route</span>&gt;
+      &lt;/<span class="fn">Routes</span>&gt;
+    &lt;/<span class="fn">BrowserRouter</span>&gt;
+  )
+}</pre>
+
+    <p><strong>API-anrop med React Query:</strong></p>
+    <pre><span class="comment">// Hämta data från backend</span>
+<span class="keyword">const</span> { data: projects } = <span class="fn">useQuery</span>({
+  queryKey: [<span class="string">'projects'</span>],
+  queryFn: () => <span class="fn">getProjects</span>()
+})
+
+<span class="comment">// Skicka data till backend (skapa/uppdatera)</span>
+<span class="keyword">const</span> mutation = <span class="fn">useMutation</span>({
+  mutationFn: (data) => <span class="fn">createProject</span>(data),
+  onSuccess: () => qc.<span class="fn">invalidateQueries</span>({ queryKey: [<span class="string">'projects'</span>] })
+})</pre>
+
+    <p><strong>Frontend Dockerfile (multi-stage build):</strong></p>
+    <pre><span class="comment"># Steg 1: Bygg React-appen</span>
+<span class="keyword">FROM</span> node:20-alpine <span class="keyword">AS</span> build
+<span class="keyword">WORKDIR</span> /app
+<span class="keyword">COPY</span> package*.json ./
+<span class="keyword">RUN</span> npm install
+<span class="keyword">COPY</span> . .
+<span class="keyword">RUN</span> npm run build   <span class="comment"># genererar statiska filer i /dist</span>
+
+<span class="comment"># Steg 2: Servera med Nginx</span>
+<span class="keyword">FROM</span> nginx:alpine
+<span class="keyword">COPY</span> --from=build /app/dist /usr/share/nginx/html
+<span class="keyword">COPY</span> nginx.conf /etc/nginx/conf.d/default.conf</pre>
+  </div>
+
+  <hr class="divider">
+
+  <!-- STEG 6: STARTA -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">6</div>
+      <h2>Starta applikationen</h2>
+    </div>
+
+    <p class="lead">Allt startas med ett enda kommando. Docker Compose sköter ordningen — databasen startar först, sedan backend, sedan frontend.</p>
+
+    <ol class="steps">
+      <li><p>Kopiera miljövariabler: <code>copy .env.example .env</code></p></li>
+      <li><p>Starta och bygg alla tjänster: <code>docker compose up --build</code></p></li>
+      <li><p>Ladda in exempeldata (en gång): <code>docker compose exec backend npm run seed</code></p></li>
+      <li><p>Öppna webbläsaren på <code>http://localhost:3000</code></p></li>
+    </ol>
+
+    <pre><span class="comment"># Starta appen</span>
+docker compose up
+
+<span class="comment"># Starta och bygg om (efter kodändringar)</span>
+docker compose up --build
+
+<span class="comment"># Stoppa appen</span>
+docker compose down
+
+<span class="comment"># Se loggar</span>
+docker compose logs -f backend</pre>
+
+    <div class="callout">
+      <strong>Tillgängliga adresser när appen körs:</strong><br>
+      &nbsp;&nbsp;Frontend: <code>http://localhost:3000</code><br>
+      &nbsp;&nbsp;API: <code>http://localhost:4000/api</code><br>
+      &nbsp;&nbsp;Swagger-docs: <code>http://localhost:4000/api/docs</code>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- STEG 7: GITHUB -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">7</div>
+      <h2>Samarbeta med GitHub</h2>
+    </div>
+
+    <p class="lead">Koden delas via GitHub. Varje person kör sin egen databas lokalt i Docker. GitHub innehåller aldrig databas eller lösenord.</p>
+
+    <pre><span class="comment"># En person — ladda upp en gång</span>
+git init
+git add .
+git commit -m <span class="string">"Initial commit"</span>
+git remote add origin https://github.com/NAMN/REPO.git
+git push -u origin main
+
+<span class="comment"># Övriga i gruppen — hämta och starta</span>
+git clone https://github.com/NAMN/REPO.git
+copy .env.example .env
+docker compose up --build
+docker compose exec backend npm run seed</pre>
+
+    <pre><span class="comment"># Daglig workflow</span>
+git pull                      <span class="comment"># hämta andras ändringar</span>
+<span class="comment"># ...koda...</span>
+git add .
+git commit -m <span class="string">"Beskrivning"</span>
+git push
+
+<span class="comment"># När någon pushat ny kod</span>
+git pull
+docker compose up --build    <span class="comment"># bygg om med ny kod</span></pre>
+
+    <div class="callout warning">
+      <strong>Aldrig pusha:</strong> <code>.env</code>-filen (lösenord), <code>node_modules/</code> (för stor), <code>dist/</code> (genereras vid build). Dessa står i <code>.gitignore</code>.
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

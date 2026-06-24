@@ -1,0 +1,137 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Project {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String?
+  status      String     @default("GREEN") // GREEN, YELLOW, RED
+  phase       String?
+  budget      Float?
+  summary     String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  activities  Activity[]
+  risks       Risk[]
+  issues      Issue[]
+  decisions   Decision[]
+  shareTokens ShareToken[]
+}
+
+model Activity {
+  id          Int      @id @default(autoincrement())
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   Int
+  name        String
+  startDate   DateTime
+  endDate     DateTime
+  progress    Int      @default(0) // 0-100
+  status      String   @default("NOT_STARTED") // NOT_STARTED, IN_PROGRESS, DONE, BLOCKED
+  isMilestone Boolean  @default(false)
+  budget      Float?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  resources         ActivityResource[]
+  dependsOn         Dependency[]       @relation("DependencyTo")
+  blockedBy         Dependency[]       @relation("DependencyFrom")
+}
+
+model Dependency {
+  id             Int      @id @default(autoincrement())
+  fromActivity   Activity @relation("DependencyFrom", fields: [fromActivityId], references: [id], onDelete: Cascade)
+  fromActivityId Int
+  toActivity     Activity @relation("DependencyTo", fields: [toActivityId], references: [id], onDelete: Cascade)
+  toActivityId   Int
+}
+
+model Domain {
+  id     Int     @id @default(autoincrement())
+  name   String
+  tribes Tribe[]
+}
+
+model Tribe {
+  id       Int     @id @default(autoincrement())
+  name     String
+  domain   Domain  @relation(fields: [domainId], references: [id])
+  domainId Int
+  teams    Team[]
+}
+
+model Team {
+  id        Int        @id @default(autoincrement())
+  name      String
+  tribe     Tribe      @relation(fields: [tribeId], references: [id])
+  tribeId   Int
+  resources Resource[]
+}
+
+model Resource {
+  id         Int               @id @default(autoincrement())
+  name       String
+  role       String?
+  team       Team              @relation(fields: [teamId], references: [id])
+  teamId     Int
+  activities ActivityResource[]
+}
+
+model ActivityResource {
+  activity    Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  activityId  Int
+  resource    Resource @relation(fields: [resourceId], references: [id])
+  resourceId  Int
+  hoursNeeded Float?
+
+  @@id([activityId, resourceId])
+}
+
+model Risk {
+  id          Int      @id @default(autoincrement())
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   Int
+  description String
+  impact      String   @default("MEDIUM") // LOW, MEDIUM, HIGH
+  probability String   @default("MEDIUM") // LOW, MEDIUM, HIGH
+  status      String   @default("OPEN")   // OPEN, MITIGATED, CLOSED
+  owner       String?
+  createdAt   DateTime @default(now())
+}
+
+model Issue {
+  id          Int      @id @default(autoincrement())
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   Int
+  description String
+  status      String   @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED
+  owner       String?
+  createdAt   DateTime @default(now())
+}
+
+model Decision {
+  id          Int      @id @default(autoincrement())
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   Int
+  description String
+  owner       String?
+  decidedAt   DateTime @default(now())
+}
+
+model ShareToken {
+  id        Int      @id @default(autoincrement())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId Int
+  token     String   @unique
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+}
